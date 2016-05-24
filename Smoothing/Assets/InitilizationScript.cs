@@ -6,17 +6,25 @@ public class InitilizationScript : MonoBehaviour
     //converts the (potentially) sub mesh in the given gameobject into a sudomesh
     //then uses that to create a HE data structure
 
+    public GameObject gizmoArrow, gizmoSquare;
+
     public GameObject objectToDeform;
+
+    private GameObject gizmo;
 
     private MeshFilter[] meshFilters;
     private SudoMesh sudoMesh;
     private HEMesh heMesh;
-    
+
+    private List<int> selectedVerts = new List<int>();
+
     // Use this for initialization
     void Start()
     {
         meshFilters = objectToDeform.GetComponentsInChildren<MeshFilter>();
         addColliders();
+
+        spawnGizmo();
 
         sudoMesh = makeSudoMesh();
 
@@ -30,6 +38,11 @@ public class InitilizationScript : MonoBehaviour
         foreach (MeshFilter meshFilter in meshFilters)
             if (meshFilter.GetComponent<MeshCollider>() == null)
                 meshFilter.gameObject.AddComponent<MeshCollider>();
+    }
+
+    private void spawnGizmo()
+    {
+        gizmo = new GameObject("Gizmo");
     }
 
     //extract the sub meshes from the mesh filters and parse into SudoMesh
@@ -57,92 +70,54 @@ public class InitilizationScript : MonoBehaviour
 
     void Update()
     {
-        getVerts(checkNewMesh());
-    }
+        //if right clicked, then clear selected verts
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            selectedVerts.Clear();
+            paintVertices();
+        }
 
-    //for testing atm, clicking on the mesh to select a vert on the sudomesh
+        //selecting the gizmo point
+        if (Input.GetButtonDown("Fire1"))
+            setGizmo(pointOnMesh());
+
+        //selecting the vertex to weight/pivot
+        if (Input.GetButton("Fire2"))
+            getSelectedVertex(pointOnMesh());
+    }
+    
     //return the clicked point on the mesh
-    private RaycastHit checkNewMesh()
+    private RaycastHit pointOnMesh()
     {
         //get new object if clicked
         RaycastHit rayCastHit = new RaycastHit();
-        if (Input.GetButtonDown("Fire1"))
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out rayCastHit))
-                foreach (MeshCollider collider in objectToDeform.GetComponentsInChildren<MeshCollider>())
-                    if (rayCastHit.collider == collider)
-                        return rayCastHit;
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out rayCastHit))
+            foreach (MeshCollider collider in objectToDeform.GetComponentsInChildren<MeshCollider>())
+                if (rayCastHit.collider == collider)
+                    return rayCastHit;
 
         return new RaycastHit();
     }
 
-    //again for testing
-    private void getVerts(RaycastHit rayCastHit)
+    //places a gizmo at the selected point
+    private void setGizmo(RaycastHit rayCastHit)
     {
-        //get closest vert to ray cast
-        //and color them
+        if (rayCastHit.collider == null)
+            return;
+
+        gizmo.transform.position = objectToDeform.transform.TransformPoint(sudoMesh.vertices[findClosestVertex(rayCastHit)]);
+    }
+
+    //Logs the closets vertex to the point clicked on mesh
+    private void getSelectedVertex(RaycastHit rayCastHit)
+    {
         if (rayCastHit.collider == null)
             return;
 
         //find the vertex that was selected and its neighbours
-        int mainVert = findClosestVertex(rayCastHit);        
-        List<HalfEdge> neighbours = findNeighbouringHalfEdges(mainVert);
+        selectedVerts.Add(findClosestVertex(rayCastHit));
 
-        //now colour the vertex
-        Color[] colors = new Color[sudoMesh.vertexCount];
-
-        //colour the whole mesh white first
-        for (int i = 0; i < sudoMesh.vertexCount; i++)
-            colors[i] = Color.white;
-
-        //then colour the neibghours
-        foreach (HalfEdge neighbour in neighbours)
-            colors[neighbour.vertexEnd] = Color.red;
-
-        //finally colour the main vertex
-        colors[mainVert] = Color.yellow;
-        sudoMesh.colors = colors;
-
-        updateMeshes();
-
-
-        /*
-        //now find nieboughrs and colour them in
-        HalfEdge he = heMesh.vertToHE[mainVert];
-        HalfEdge next = he;
-
-        //colour tri
-        //when return, jump to next tri via opposite
-
-        //colour face
-        //when end face, go to opposite and continue
-        
-        do
-        {
-            next = next.nextHalfEdge;
-            if (next.oppositeHalfEdge != null)
-            {
-                Face face = heMesh.faces[next.oppositeHalfEdge.face];
-                for (int i = 0; i < face.vertices.Length; i++)
-                {
-                    colors[face.vertices[i]] = Color.red;
-                }
-            }
-        }
-        while (next != he);
-        */
-
-
-        //if (distance < thresholdDist)
-        //{
-        //    colors[i] = Color.Lerp(Color.yellow, Color.blue, distance / thresholdDist);
-        //    neighbours.Add(i, thresholdDist / distance);
-        //}
-        //else
-        //    colors[i] = Color.white;
-
-
-        //colors[mainVert] = Color.red;
-        //mesh.colors = colors;
+        paintVertices();
     }
 
     //Returns the closest vertex to the point hit
@@ -173,6 +148,32 @@ public class InitilizationScript : MonoBehaviour
         return mainVert;
     }
 
+    //paint the selected and neibghouring vertices
+    private void paintVertices()
+    {
+        bool paintNeighbours = false;
+
+        Color[] colors = new Color[sudoMesh.vertexCount];
+
+        //colour the whole mesh white first
+        for (int i = 0; i < sudoMesh.vertexCount; i++)
+            colors[i] = Color.white;
+
+        if (paintNeighbours)
+            //then colour the neibghours
+            foreach (int mainVert in selectedVerts)
+                foreach (HalfEdge neighbour in findNeighbouringHalfEdges(mainVert))
+                    colors[neighbour.vertexEnd] = Color.red;
+
+        //finally colour the main vertices
+        foreach (int mainVert in selectedVerts)
+            colors[mainVert] = Color.red;
+
+        sudoMesh.colors = colors;
+
+        updateMeshes();
+    }
+
     //find all the neighbouring vertices, and return the corresponding half edge
     //means we can do face calculations as well
     private List<HalfEdge> findNeighbouringHalfEdges(int vertex)
@@ -182,10 +183,7 @@ public class InitilizationScript : MonoBehaviour
         List<int> searchedVertices = new List<int>();           //for ensuring we don't add a HE with the same vert ID
         HalfEdge currentHE = heMesh.vertToHE[vertex];           //set current HE to the next of verts HE, as we will visit this vert again
         List<HalfEdge> traversedHEs = new List<HalfEdge>();
-
-        List<int> HEVerts = new List<int>();
-        List<int> HEFaces = new List<int>();
-
+        
         //loop thorugh half edge faces until we have arrived back at our vertex
         //and then get twin and repeat
         //if we don't have a twin, then search in the other direction
@@ -220,10 +218,7 @@ public class InitilizationScript : MonoBehaviour
                         break;
                     }
                 }
-
-            HEFaces.Add(currentHE.face);
-            HEVerts.Add(currentHE.vertexEnd);
-
+            
             //add the new HE to the list if
             //we haven't already added one with the same Vert
             //and if it's not the one we are lookiing for
