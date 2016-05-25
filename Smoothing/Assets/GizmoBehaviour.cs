@@ -17,18 +17,21 @@ public class GizmoBehaviour : MonoBehaviour {
 	void Update () {
 
         GizmoComponantScript component = pointOnGizmo();
-
         if (Input.GetButtonDown("Fire1"))
             if (component != null)
             {
                 mooving = true;
                 selectedComponent = component;
+                selectedComponent.setColor(Color.yellow);
             }
             else
                 mooving = false;
 
         if (Input.GetButtonUp("Fire1"))
+        {
             mooving = false;
+            selectedComponent.resetColor();
+        }
 
         if (mooving)
             moveGizmo();

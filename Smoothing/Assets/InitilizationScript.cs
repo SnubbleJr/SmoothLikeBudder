@@ -42,7 +42,7 @@ public class InitilizationScript : MonoBehaviour
 
     private void spawnGizmo()
     {
-        gizmo = Instantiate(gizmoPrefab, Vector3.one * -10, Quaternion.identity) as GameObject;
+        gizmo = Instantiate(gizmoPrefab, Vector3.one * 20, Quaternion.identity) as GameObject;
     }
 
     //extract the sub meshes from the mesh filters and parse into SudoMesh
@@ -71,7 +71,7 @@ public class InitilizationScript : MonoBehaviour
     void Update()
     {
         //if right clicked, then clear selected verts
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Fire3"))
         {
             selectedVerts.Clear();
             paintVertices();

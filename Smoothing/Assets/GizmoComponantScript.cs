@@ -8,14 +8,22 @@ public class GizmoComponantScript : MonoBehaviour {
     public Color color;
     public Vector3 influence;
 
+    private Renderer renderer;
+
 	// Use this for initialization
-	void Start () {
-        GetComponent<Renderer>().material.color = color;
-	
+	void Start ()
+    {
+        renderer = GetComponent<Renderer>();
+        setColor(color);
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+
+    public void setColor(Color color)
+    {
+        renderer.material.color = color;
+    }
+
+    public void resetColor()
+    {
+        renderer.material.color = color;
+    }
 }
