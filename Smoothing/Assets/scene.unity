@@ -244,7 +244,6 @@ GameObject:
   - 20: {fileID: 1141480296}
   - 92: {fileID: 1141480295}
   - 124: {fileID: 1141480294}
-  - 81: {fileID: 1141480293}
   m_Layer: 0
   m_Name: Camera - Everything Else
   m_TagString: Untagged
@@ -264,13 +263,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 501534447}
   m_RootOrder: 0
---- !u!81 &1141480293
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1141480291}
-  m_Enabled: 1
 --- !u!124 &1141480294
 Behaviour:
   m_ObjectHideFlags: 0
