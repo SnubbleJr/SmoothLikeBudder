@@ -5,10 +5,10 @@ public class InitilizationScript : MonoBehaviour
 {
     //converts the (potentially) sub mesh in the given gameobject into a sudomesh
     //then uses that to create a HE data structure
-
-    public GameObject gizmoArrow, gizmoSquare;
-
+    
     public GameObject objectToDeform;
+
+    public GameObject gizmoPrefab;
 
     private GameObject gizmo;
 
@@ -42,7 +42,7 @@ public class InitilizationScript : MonoBehaviour
 
     private void spawnGizmo()
     {
-        gizmo = new GameObject("Gizmo");
+        gizmo = Instantiate(gizmoPrefab, Vector3.one * -10, Quaternion.identity) as GameObject;
     }
 
     //extract the sub meshes from the mesh filters and parse into SudoMesh

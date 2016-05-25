@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GizmoArrowScript : MonoBehaviour {
+public class GizmoComponantScript : MonoBehaviour {
 
-    //just for colour setting
+    //just for colour and movement setting
 
     public Color color;
+    public Vector3 influence;
 
 	// Use this for initialization
 	void Start () {
