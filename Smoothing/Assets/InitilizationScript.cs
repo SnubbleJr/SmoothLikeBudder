@@ -11,6 +11,7 @@ public class InitilizationScript : MonoBehaviour
     public GameObject gizmoPrefab;
 
     private GameObject gizmo;
+    private int gizmodVert = -1;
 
     private MeshFilter[] meshFilters;
     private SudoMesh sudoMesh;
@@ -71,7 +72,7 @@ public class InitilizationScript : MonoBehaviour
     void Update()
     {
         //if right clicked, then clear selected verts
-        if (Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Fire3"))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             selectedVerts.Clear();
             paintVertices();
@@ -105,7 +106,8 @@ public class InitilizationScript : MonoBehaviour
         if (rayCastHit.collider == null)
             return;
 
-        gizmo.transform.position = objectToDeform.transform.TransformPoint(sudoMesh.vertices[findClosestVertex(rayCastHit)]);
+        gizmodVert = findClosestVertex(rayCastHit);
+        gizmo.transform.position = objectToDeform.transform.TransformPoint(sudoMesh.vertices[gizmodVert]);
     }
 
     //Logs the closets vertex to the point clicked on mesh

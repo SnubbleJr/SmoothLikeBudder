@@ -7,10 +7,13 @@ public class GizmoBehaviour : MonoBehaviour {
     private GizmoComponantScript selectedComponent;
     private bool mooving = false;
 
+    private float originalScale;
+
 	// Use this for initialization
 	void Start ()
     {
         previousMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        originalScale = Camera.main.orthographicSize;
     }
 	
 	// Update is called once per frame
@@ -30,13 +33,17 @@ public class GizmoBehaviour : MonoBehaviour {
         if (Input.GetButtonUp("Fire1"))
         {
             mooving = false;
-            selectedComponent.resetColor();
+            if (selectedComponent != null)
+                selectedComponent.resetColor();
         }
 
         if (mooving)
             moveGizmo();
 
         previousMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        //scale the gizmo to how far zoomed in we are
+        transform.localScale = Vector3.one * (Camera.main.orthographicSize / originalScale);
     }
 
     //return the gizmo componant selected
