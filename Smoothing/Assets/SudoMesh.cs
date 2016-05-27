@@ -148,4 +148,16 @@ public class SudoMesh
 
         return meshes;
     }
+
+    //single index update
+    public void updateVertexPosition(int index, Vector3 pos)
+    {
+        vertices[index] = pos;
+    }
+
+    //single index update
+    public void updateVertexColor(int index, Color color)
+    {
+        colors[index] = color;
+    }
 }

@@ -31,6 +31,9 @@ public class InitilizationScript : MonoBehaviour
 
         //create HE data structure
         heMesh = new HEMesh(sudoMesh);
+
+        //add color to verts
+        clearPaint();
     }
 
     //add mesh colliders to filters
@@ -74,17 +77,25 @@ public class InitilizationScript : MonoBehaviour
         //if right clicked, then clear selected verts
         if (Input.GetKeyDown(KeyCode.Space))
         {
+            clearPaint();
             selectedVerts.Clear();
-            paintVertices();
+            updateMeshes();
         }
 
-        //selecting the gizmo point
-        if (Input.GetButtonDown("Fire1"))
-            setGizmo(pointOnMesh());
+        RaycastHit rayCastHit;
 
-        //selecting the vertex to weight/pivot
-        if (Input.GetButton("Fire2"))
-            getSelectedVertex(pointOnMesh());
+        if (Input.GetButtonDown("Fire1") || Input.GetButton("Fire2"))
+        {
+            rayCastHit = pointOnMesh();
+
+            //selecting the gizmo point
+            if (Input.GetButtonDown("Fire1"))
+                setGizmo(rayCastHit);
+
+            //selecting the vertex to weight/pivot
+            if (Input.GetButton("Fire2"))
+                getSelectedVertex(rayCastHit);
+        }
     }
     
     //return the clicked point on the mesh
@@ -120,6 +131,7 @@ public class InitilizationScript : MonoBehaviour
         selectedVerts.Add(findClosestVertex(rayCastHit));
 
         paintVertices();
+        updateMeshes();
     }
 
     //Returns the closest vertex to the point hit
@@ -135,14 +147,15 @@ public class InitilizationScript : MonoBehaviour
         float closestDistance = Mathf.Infinity;
 
         int mainVert = 0;
+        
+        float dist;
 
         for (int i = 0; i < sudoMesh.vertexCount; i++)
         {
-            Vector3 diff = localPoint - vertices[i];
-            float distSqr = diff.sqrMagnitude;
-            if (distSqr < closestDistance)
+            dist = Vector3.Distance(localPoint, vertices[i]);
+            if (dist < closestDistance)
             {
-                closestDistance = distSqr;
+                closestDistance = dist;
                 mainVert = i;
             }
         }
@@ -150,31 +163,30 @@ public class InitilizationScript : MonoBehaviour
         return mainVert;
     }
 
+    //paint all verts white
+    private void clearPaint()
+    {
+        Color white = Color.white;
+
+        //colour the whole mesh white first
+        for (int i = 0; i < sudoMesh.vertexCount; i++)
+            sudoMesh.updateVertexColor(i, white);
+    }
+
     //paint the selected and neibghouring vertices
     private void paintVertices()
     {
         bool paintNeighbours = false;
 
-        Color[] colors = new Color[sudoMesh.vertexCount];
-
-        //colour the whole mesh white first
-        for (int i = 0; i < sudoMesh.vertexCount; i++)
-            colors[i] = Color.white;
-
         if (paintNeighbours)
             //then colour the neibghours
             foreach (int mainVert in selectedVerts)
                 foreach (HalfEdge neighbour in findNeighbouringHalfEdges(mainVert))
-                    colors[neighbour.vertexEnd] = Color.red;
+                    sudoMesh.updateVertexColor(neighbour.vertexEnd, Color.red);
 
-        //finally colour the main vertices
         foreach (int mainVert in selectedVerts)
-            colors[mainVert] = Color.red;
-
-        sudoMesh.colors = colors;
-
-        updateMeshes();
-    }
+            sudoMesh.updateVertexColor(mainVert, Color.red)
+;    }
 
     //find all the neighbouring vertices, and return the corresponding half edge
     //means we can do face calculations as well
