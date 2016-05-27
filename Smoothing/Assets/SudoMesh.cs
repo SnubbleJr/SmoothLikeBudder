@@ -9,17 +9,16 @@ public class SudoMesh
     //representation of a mesh that has too many vertices to be rendered as a single mesh
 
     public string name;
-    public Vector3[] vertices;
-    public int[] triangles;
+    public List<Vector3[]> vertices;
+    public List<int[]> triangles;
     public int vertexCount;
-    public Color[] colors;
+    public List<Color[]> colors;
+    public int subMeshCount;
 
-    private int[] vertexSplit;              //this is where the auto split from unity camein (the length of the arrays)
-    private int[] triSplit;                 //this is where the auto split from unity camein (the length of the arrays)
+    private int triCount;
 
-    private Dictionary<int, int[]> originalTris = new Dictionary<int, int[]>();                 //store the original tris as they don't change
-    private Dictionary<int, Vector2[]> originalUVs = new Dictionary<int, Vector2[]>();          //same for uv
-    private Dictionary<int, Vector3[]> originalNormals = new Dictionary<int, Vector3[]>();      //same for normals
+    private List<Vector2[]> originalUVs = new List<Vector2[]>();            //original uvs as they don't change
+    private List<Vector3[]> originalNormals = new List<Vector3[]>();        //same for normals
 
     private const int vertexLimit = 65534;
 
@@ -40,112 +39,82 @@ public class SudoMesh
 
         this.name = name;
 
-        //get vertex count for the whole mesh
-        int vCount = 0;
-        int tCount = 0;
-
+        vertices = new List<Vector3[]>();
+        triangles = new List<int[]>();
+        colors = new List<Color[]>();
+        vertexCount = 0;
+        triCount = 0;
+        
         for (int i = 0; i < meshes.Length; i++)
         {
-            vCount += meshes[i].vertexCount;
-            tCount += meshes[i].triangles.Length;
+            vertices.Add(meshes[i].vertices);
+            triangles.Add(meshes[i].triangles);
+            colors.Add(meshes[i].colors);
+                        
+            //log the original uvs and normals
+            originalUVs.Add(meshes[i].uv);
+            originalNormals.Add(meshes[i].normals);
+
+            vertexCount += meshes[i].vertexCount;
+            triCount += meshes[i].triangles.Length;
         }
 
-        vertices = new Vector3[vCount];
-        triangles = new int[tCount];
-        colors = new Color[vCount];
-
-        vertexSplit = new int[meshes.Length];
-        triSplit = new int[meshes.Length];
-
-        int vOffset = 0;
-        int tOffset = 0;
-
-        //string thing = "";
-
-        //Dictionary<Vector3, int> commonVerts = new Dictionary<Vector3, int>();
-        //for (int i = 0; i < meshes[0].vertexCount; i++)
-        //    if ((meshes[0].vertices[i] - meshes[0].vertices[96]).sqrMagnitude < 0.00001f)
-        //        thing += i.ToString() + ", " + meshes[0].vertices[i];
-
-
-        //Debug.Log(thing);
-
-        //int what = 0;
-
-        //for (int j = 0; j < meshes[0].vertices[i]; j++)
-        //    if (commonVerts.ContainsKey(meshes[1].vertices[j]))
-        //        what++;
-
-        for (int i = 0; i < meshes.Length; i++)
-        {
-            meshes[i].vertices.CopyTo(vertices, vOffset);
-
-            meshes[i].colors.CopyTo(colors, vOffset);
-            
-            //create the new triangle array, correctly offset
-            List<int> list = new List<int>();
-            meshes[i].triangles.ToList().ForEach(x => list.Add(x + tOffset));
-            list.ToArray().CopyTo(triangles, tOffset);
-            
-            //log where the splits in the arrays occur
-            vertexSplit[i] = meshes[i].vertexCount;
-            vOffset += vertexSplit[i];
-            triSplit[i] = meshes[i].triangles.Length;
-            tOffset += triSplit[i];
-            
-            //log the original triangles uvs and normals
-            originalTris.Add(i, meshes[i].triangles);
-            originalUVs.Add(i, meshes[i].uv);
-            originalNormals.Add(i, meshes[i].normals);
-        }
-
-        vertexCount = vertices.Length;
+        subMeshCount = meshes.Length;
     }
 
     //Returns the mesh(es) of the sudomesh
     //As there is a hard vertex limit, it will pslit the mesh up to meet it
     public Mesh[] getMeshes()
     {
-        Mesh[] meshes = new Mesh[vertexSplit.Length];
+        Mesh[] meshes = new Mesh[subMeshCount];
 
         //seperate Color meshes
-
-        int vOffset = 0;
-
-        for (int i = 0; i < meshes.Length; i++)
+        
+        for (int i = 0; i < subMeshCount; i++)
         {
             meshes[i] = new Mesh();
 
             meshes[i].name = name + (i+1).ToString();
             
             //retstore vertex arrays for mesh
-            Vector3[] tempVerts = new Vector3[vertexSplit[i]];
-            Array.Copy(vertices, vOffset, tempVerts, 0, tempVerts.Length);
-            meshes[i].vertices = tempVerts;
+            meshes[i].vertices = vertices[i];
+            if (colors.Count > 0)
+                meshes[i].colors = colors[i];
+            meshes[i].triangles = triangles[i];
             
-            //restore colors
-            Color[] tempColors = new Color[vertexSplit[i]];
-            Array.Copy(colors, vOffset, tempColors, 0, tempColors.Length);
-            meshes[i].colors = tempColors;
-
-            vOffset += vertexSplit[i];
-
-            //this reforms the triangle array, but we can just give over the original tri array
-            //space v time (and bugs)
-            /*
-            meshes[i].triangles = new int[(triSplit[i])];
-            List<int> list = new List<int>();
-            triangles.ToList().ForEach(x => list.Add(x - triSplit[i]));
-            Array.Copy(list.ToArray(), meshes[i].triangles, meshes[i].triangles.Length);
-            */
-
-
-            //restore original triangles uvs and normals
-            meshes[i].triangles = originalTris[i];
+            //restore original uvs and normals
             meshes[i].uv = originalUVs[i];
             meshes[i].normals = originalNormals[i];
         }
 
         return meshes;
+    }
+
+    //returns triangles as a single array
+    public int[] getTriangles()
+    {
+        int[] tris = new int[triCount];
+        int offset = 0;
+        for (int i = 0; i < triangles.Count; i++)
+        {
+            triangles[i].CopyTo(tris, offset);
+            offset += triangles[i].Length;
+        }
+
+        return tris;
+    }
+
+    //just like getTriangles
+    public Vector3[] getVertices()
+    {
+        Vector3[] verts = new Vector3[vertexCount];
+        int offset = 0;
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            vertices[i].CopyTo(verts, offset);
+            offset += vertices[i].Length;
+        }
+
+        return verts;
     }
 }

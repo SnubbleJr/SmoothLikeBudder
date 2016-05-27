@@ -21,7 +21,7 @@ public class HEMesh
     
     public HEMesh(SudoMesh mesh)
     {
-        generateHalfEdges(mesh.triangles);
+        generateHalfEdges(mesh.getTriangles());
 
         //debugCheck(mesh.vertexCount);
     }
