@@ -79,7 +79,6 @@ public class InitilizationScript : MonoBehaviour
         {
             clearPaint();
             selectedVerts.Clear();
-            updateMeshes();
         }
 
         RaycastHit rayCastHit;
@@ -96,6 +95,9 @@ public class InitilizationScript : MonoBehaviour
             if (Input.GetButton("Fire2"))
                 getSelectedVertex(rayCastHit);
         }
+
+        setGizmoVert();
+        updateMeshes();
     }
     
     //Ed: return the clicked point on the mesh
@@ -119,6 +121,13 @@ public class InitilizationScript : MonoBehaviour
 
         gizmodVert = findClosestVertex(rayCastHit);
         gizmo.transform.position = objectToDeform.transform.TransformPoint(sudoMesh.vertices[gizmodVert]);
+    }
+
+    //Ed: update the position of gizmoVert to the gizmo
+    private void setGizmoVert()
+    {
+        if (gizmodVert > 0)
+            sudoMesh.vertices[gizmodVert] = objectToDeform.transform.InverseTransformPoint(gizmo.transform.position);
     }
 
     //Ed: Logs the closets vertex to the point clicked on mesh
