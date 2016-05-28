@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 
 public class MeshSculptingScript : MonoBehaviour {
-    //This script lets a mesh be for deformed by the mouse
+    //Ed: This script lets a mesh be for deformed by the mouse
 
     private Transform trans;
     int mainVert;
     SortedDictionary<int, float> neighbours;
     Vector3 prevMousePos = Vector3.zero;
 
-    // Update is called once per frame
+    //Ed:  Update is called once per frame
     void Update()
     {
         getVerts(checkNewMesh());
@@ -18,7 +18,7 @@ public class MeshSculptingScript : MonoBehaviour {
 
     private Vector3 checkNewMesh()
     {
-        //get new object if clicked
+        //Ed: get new object if clicked
         RaycastHit rayCastHit = new RaycastHit();
         if (Input.GetButtonDown("Fire1"))
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out rayCastHit))
@@ -33,8 +33,8 @@ public class MeshSculptingScript : MonoBehaviour {
 
     private void getVerts(Vector3 selectedPoint)
     {
-        //get closest vert to ray cast
-        //and color them
+        //Ed: get closest vert to ray cast
+        //Ed: and color them
         if (selectedPoint == Vector3.zero)
             return;
 
@@ -46,10 +46,10 @@ public class MeshSculptingScript : MonoBehaviour {
         Vector3[] vertices = mesh.vertices;
         Color[] colors = new Color[vertices.Length];
 
-        //nearest vert
+        //Ed: nearest vert
         float closestDistance = 100f;
 
-        //neighbouring verts
+        //Ed: neighbouring verts
         float thresholdDist = 0.5f;
 
         for (int i = 0; i < vertices.Length; i++)
@@ -76,7 +76,7 @@ public class MeshSculptingScript : MonoBehaviour {
 
     private void moveVerts()
     {
-        //move verts based on mouse movement
+        //Ed: move verts based on mouse movement
         if (trans == null)
             return;
 

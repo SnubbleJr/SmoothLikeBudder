@@ -10,20 +10,20 @@ public class HEMesh
     public Dictionary<int, HalfEdge> vertToHE;
     public Face[] faces;
     
-    private Dictionary<int, List<HalfEdge>> vertStartToHE;       //maps all the HEs that start a specific vert, for fast opp finding
+    private Dictionary<int, List<HalfEdge>> vertStartToHE;       //Ed: maps all the HEs that start a specific vert, for fast opp finding
 
     public HEMesh (Mesh mesh)
     {
         generateHalfEdges(mesh.triangles);
 
-        //debugCheck(mesh.vertexCount);
+        //Ed: debugCheck(mesh.vertexCount);
     }
     
     public HEMesh(SudoMesh mesh)
     {
         generateHalfEdges(mesh.triangles);
 
-        //debugCheck(mesh.vertexCount);
+        //Ed: debugCheck(mesh.vertexCount);
     }
 
     private void debugCheck(int vertexCount)
@@ -50,13 +50,13 @@ public class HEMesh
         findOppositeHE();
     }
 
-    //returns a set of faces based of the give mesh triangles
-    //mesh tris are CW, while faces are CCW
+    //Ed: returns a set of faces based of the give mesh triangles
+    //Ed: mesh tris are CW, while faces are CCW
     private Face[] generateFaces(int[] triangles)
     {
         Face[] faces = new Face[triangles.Length / 3];
 
-        //This looks nasty, but it's fast, it's just getting 3 elements in turn
+        //Ed: This looks nasty, but it's fast, it's just getting 3 elements in turn
         for (int i = 0; i < faces.Length; i++)
         {
             int[] verts = new int[3];
@@ -68,15 +68,15 @@ public class HEMesh
         return faces;
     }
 
-    //generates the set of half edges for the given edge
-    //sets up to 1 HalfEdge for an unset vertex within the face
+    //Ed: generates the set of half edges for the given edge
+    //Ed: sets up to 1 HalfEdge for an unset vertex within the face
     private void generateHEInFace(int faceID)
     {
         Face face = faces[faceID];
 
         HalfEdge[] hes = new HalfEdge[3];
         
-        //generate all the HEs first so that they can be referenced
+        //Ed: generate all the HEs first so that they can be referenced
         for(int i = 0; i < hes.Length; i++)
             hes[i] = new HalfEdge();
 
@@ -93,7 +93,7 @@ public class HEMesh
             if (!vertToHE.ContainsKey(hes[i].vertexStart))
                 vertToHE.Add(hes[i].vertexStart, hes[i]);
 
-            //add to the vert start list map
+            //Ed: add to the vert start list map
 
             if (!vertStartToHE.ContainsKey(hes[i].vertexStart))
                 vertStartToHE.Add(hes[i].vertexStart, new List<HalfEdge>());
@@ -125,19 +125,19 @@ public class HEMesh
     hes[2].previousHalfEdge = hes[1];
     */
 
-    //finds and links the opposite HEs (if existant)
+    //Ed: finds and links the opposite HEs (if existant)
     private void findOppositeHE()
     {
         int oppCount = 0;
         int nopCount = 0;
         foreach (HalfEdge he in allHalfEdges)
         {
-            //skip this he if already has an opp
+            //Ed: skip this he if already has an opp
             if (he.oppositeHalfEdge != null)
                 continue;
 
-            //if an opp exists
-            //if there are HEs that start at this HE's end
+            //Ed: if an opp exists
+            //Ed: if there are HEs that start at this HE's end
             List<HalfEdge> potentialOpps = vertStartToHE[he.vertexEnd];
 
             foreach (HalfEdge potentialOpp in potentialOpps)
