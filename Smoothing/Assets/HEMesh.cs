@@ -99,20 +99,7 @@ public class HEMesh
                 vertStartToHE.Add(hes[i].vertexStart, new List<HalfEdge>());
 
             vertStartToHE[face.vertices[i]].Add(hes[i]);
-        }
-
-        /*
-        this was for maming sure that each vert referenced a HE in a different face, but it left holes
-
-        //check to see if it has been set yet
-        int unusedVert = -1;
-        for (int i = 0; i < 3; i++)
-            if (!vertToHE.ContainsKey(face.vertices[i]))
-                unusedVert = i;
-
-        if (unusedVert > -1)
-            vertToHE.Add(face.vertices[unusedVert], hes[unusedVert]);
-        */
+        }        
     }
     /*
     fancy for loop for the hes does this
@@ -141,8 +128,6 @@ public class HEMesh
     //finds and links the opposite HEs (if existant)
     private void findOppositeHE()
     {
-        List<HalfEdge> freeNeighbours = allHalfEdges.ToList();
-
         int oppCount = 0;
         int nopCount = 0;
         foreach (HalfEdge he in allHalfEdges)
@@ -168,15 +153,6 @@ public class HEMesh
 
             if (he.oppositeHalfEdge == null)
                 nopCount++;
-
-
-            //foreach (HalfEdge potentialOpp in freeNeighbours)
-            //    if ((potentialOpp.vertexStart == he.vertexEnd) && (potentialOpp.vertexEnd == he.vertexStart))
-            //    {
-            //        freeNeighbours.Remove(he);
-            //        freeNeighbours.Remove(potentialOpp);
-            //        break;
-            //    }
         }
     }
 }

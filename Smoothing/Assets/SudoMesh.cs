@@ -59,23 +59,7 @@ public class SudoMesh
 
         int vOffset = 0;
         int tOffset = 0;
-
-        //string thing = "";
-
-        //Dictionary<Vector3, int> commonVerts = new Dictionary<Vector3, int>();
-        //for (int i = 0; i < meshes[0].vertexCount; i++)
-        //    if ((meshes[0].vertices[i] - meshes[0].vertices[96]).sqrMagnitude < 0.00001f)
-        //        thing += i.ToString() + ", " + meshes[0].vertices[i];
-
-
-        //Debug.Log(thing);
-
-        //int what = 0;
-
-        //for (int j = 0; j < meshes[0].vertices[i]; j++)
-        //    if (commonVerts.ContainsKey(meshes[1].vertices[j]))
-        //        what++;
-
+        
         for (int i = 0; i < meshes.Length; i++)
         {
             meshes[i].vertices.CopyTo(vertices, vOffset);
@@ -129,16 +113,6 @@ public class SudoMesh
             meshes[i].colors = tempColors;
 
             vOffset += vertexSplit[i];
-
-            //this reforms the triangle array, but we can just give over the original tri array
-            //space v time (and bugs)
-            /*
-            meshes[i].triangles = new int[(triSplit[i])];
-            List<int> list = new List<int>();
-            triangles.ToList().ForEach(x => list.Add(x - triSplit[i]));
-            Array.Copy(list.ToArray(), meshes[i].triangles, meshes[i].triangles.Length);
-            */
-
 
             //restore original triangles uvs and normals
             meshes[i].triangles = originalTris[i];
