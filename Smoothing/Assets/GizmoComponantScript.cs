@@ -3,14 +3,14 @@ using System.Collections;
 
 public class GizmoComponantScript : MonoBehaviour {
 
-    //just for colour and movement setting
+    //Ed: just for colour and movement setting
 
     public Color color;
     public Vector3 influence;
 
     private Renderer renderer;
 
-	// Use this for initialization
+	//Ed:  Use this for initialization
 	void Start ()
     {
         renderer = GetComponent<Renderer>();

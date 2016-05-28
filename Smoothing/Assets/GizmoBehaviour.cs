@@ -9,14 +9,14 @@ public class GizmoBehaviour : MonoBehaviour {
 
     private float originalScale;
 
-	// Use this for initialization
+	//Ed:  Use this for initialization
 	void Start ()
     {
         previousMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         originalScale = Camera.main.orthographicSize;
     }
 	
-	// Update is called once per frame
+	//Ed:  Update is called once per frame
 	void Update () {
 
         GizmoComponantScript component = pointOnGizmo();
@@ -42,14 +42,14 @@ public class GizmoBehaviour : MonoBehaviour {
 
         previousMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        //scale the gizmo to how far zoomed in we are
+        //Ed: scale the gizmo to how far zoomed in we are
         transform.localScale = Vector3.one * (Camera.main.orthographicSize / originalScale);
     }
 
-    //return the gizmo componant selected
+    //Ed: return the gizmo componant selected
     private GizmoComponantScript pointOnGizmo()
     {
-        //get gizmo part
+        //Ed: get gizmo part
         RaycastHit rayCastHit = new RaycastHit();
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out rayCastHit))
             if (rayCastHit.collider.CompareTag("Gizmo"))
@@ -58,12 +58,12 @@ public class GizmoBehaviour : MonoBehaviour {
         return null;
     }
 
-    //move according to mouse movments and what componet was selcted
+    //Ed: move according to mouse movments and what componet was selcted
     private void moveGizmo()
     {
         Vector3 delta = Camera.main.ScreenToWorldPoint(Input.mousePosition) - previousMousePos;
         
-        //contrain movmenet by the axis we have selected
+        //Ed: contrain movmenet by the axis we have selected
         delta = Vector3.Scale(delta, selectedComponent.influence);
 
         transform.position += delta;

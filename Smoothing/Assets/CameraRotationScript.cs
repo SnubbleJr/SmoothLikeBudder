@@ -6,14 +6,14 @@ public class CameraRotationScript : MonoBehaviour {
     private Vector3 previousMousePos;
     private Camera[] cameras;
 
-    // Use this for initialization
+    //Ed:  Use this for initialization
     void Start ()
     {
         previousMousePos = Input.mousePosition;
         cameras = GetComponentsInChildren<Camera>();
     }
 	
-	// Update is called once per frame
+	//Ed:  Update is called once per frame
 	void Update ()
     {
         float scale = 0.75f;

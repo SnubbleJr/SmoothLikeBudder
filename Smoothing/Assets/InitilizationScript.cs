@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 public class InitilizationScript : MonoBehaviour
 {
-    //converts the (potentially) sub mesh in the given gameobject into a sudomesh
-    //then uses that to create a HE data structure
+    //Ed: converts the (potentially) sub mesh in the given gameobject into a sudomesh
+    //Ed: then uses that to create a HE data structure
     
     public GameObject objectToDeform;
 
@@ -19,7 +19,7 @@ public class InitilizationScript : MonoBehaviour
 
     private List<int> selectedVerts = new List<int>();
 
-    // Use this for initialization
+    //Ed:  Use this for initialization
     void Start()
     {
         meshFilters = objectToDeform.GetComponentsInChildren<MeshFilter>();
@@ -29,14 +29,14 @@ public class InitilizationScript : MonoBehaviour
 
         sudoMesh = makeSudoMesh();
 
-        //create HE data structure
+        //Ed: create HE data structure
         heMesh = new HEMesh(sudoMesh);
 
-        //add color to verts
+        //Ed: add color to verts
         clearPaint();
     }
 
-    //add mesh colliders to filters
+    //Ed: add mesh colliders to filters
     private void addColliders()
     {
         foreach (MeshFilter meshFilter in meshFilters)
@@ -49,7 +49,7 @@ public class InitilizationScript : MonoBehaviour
         gizmo = Instantiate(gizmoPrefab, Vector3.one * 20, Quaternion.identity) as GameObject;
     }
 
-    //extract the sub meshes from the mesh filters and parse into SudoMesh
+    //Ed: extract the sub meshes from the mesh filters and parse into SudoMesh
     private SudoMesh makeSudoMesh()
     {
         Mesh[] originalMeshes = new Mesh[meshFilters.Length];
@@ -57,13 +57,13 @@ public class InitilizationScript : MonoBehaviour
         for (int i = 0; i < meshFilters.Length; i++)
             originalMeshes[i] = meshFilters[i].mesh;
 
-        //make sudo mesh
+        //Ed: make sudo mesh
         SudoMesh mesh = new SudoMesh(originalMeshes);
 
         return mesh;
     }
 
-    //updates the vertices and color of the new submeshes
+    //Ed: updates the vertices and color of the new submeshes
     private void updateMeshes()
     {
         Mesh[] newMeshes = sudoMesh.getMeshes();
@@ -74,12 +74,11 @@ public class InitilizationScript : MonoBehaviour
 
     void Update()
     {
-        //if right clicked, then clear selected verts
+        //Ed: if right clicked, then clear selected verts
         if (Input.GetKeyDown(KeyCode.Space))
         {
             clearPaint();
             selectedVerts.Clear();
-            updateMeshes();
         }
 
         RaycastHit rayCastHit;
@@ -88,20 +87,23 @@ public class InitilizationScript : MonoBehaviour
         {
             rayCastHit = pointOnMesh();
 
-            //selecting the gizmo point
+            //Ed: selecting the gizmo point
             if (Input.GetButtonDown("Fire1"))
                 setGizmo(rayCastHit);
 
-            //selecting the vertex to weight/pivot
+            //Ed: selecting the vertex to weight/pivot
             if (Input.GetButton("Fire2"))
                 getSelectedVertex(rayCastHit);
         }
+
+        setGizmoVert();
+        updateMeshes();
     }
     
-    //return the clicked point on the mesh
+    //Ed: return the clicked point on the mesh
     private RaycastHit pointOnMesh()
     {
-        //get new object if clicked
+        //Ed: get new object if clicked
         RaycastHit rayCastHit = new RaycastHit();
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out rayCastHit))
             foreach (MeshCollider collider in objectToDeform.GetComponentsInChildren<MeshCollider>())
@@ -111,7 +113,7 @@ public class InitilizationScript : MonoBehaviour
         return new RaycastHit();
     }
 
-    //places a gizmo at the selected point
+    //Ed: places a gizmo at the selected point
     private void setGizmo(RaycastHit rayCastHit)
     {
         if (rayCastHit.collider == null)
@@ -121,20 +123,27 @@ public class InitilizationScript : MonoBehaviour
         gizmo.transform.position = objectToDeform.transform.TransformPoint(sudoMesh.vertices[gizmodVert]);
     }
 
-    //Logs the closets vertex to the point clicked on mesh
+    //Ed: update the position of gizmoVert to the gizmo
+    private void setGizmoVert()
+    {
+        if (gizmodVert > 0)
+            sudoMesh.vertices[gizmodVert] = objectToDeform.transform.InverseTransformPoint(gizmo.transform.position);
+    }
+
+    //Ed: Logs the closets vertex to the point clicked on mesh
     private void getSelectedVertex(RaycastHit rayCastHit)
     {
         if (rayCastHit.collider == null)
             return;
 
-        //find the vertex that was selected and its neighbours
+        //Ed: find the vertex that was selected and its neighbours
         selectedVerts.Add(findClosestVertex(rayCastHit));
 
         paintVertices();
         updateMeshes();
     }
 
-    //Returns the closest vertex to the point hit
+    //Ed: Returns the closest vertex to the point hit
     private int findClosestVertex(RaycastHit rayCastHit)
     {
         SortedDictionary<int, float> neighbours = new SortedDictionary<int, float>();
@@ -143,7 +152,7 @@ public class InitilizationScript : MonoBehaviour
 
         Vector3 localPoint = trans.InverseTransformPoint(rayCastHit.point);
         Vector3[] vertices = sudoMesh.vertices;
-        //find the nearest vert
+        //Ed: find the nearest vert
         float closestDistance = Mathf.Infinity;
 
         int mainVert = 0;
@@ -163,23 +172,23 @@ public class InitilizationScript : MonoBehaviour
         return mainVert;
     }
 
-    //paint all verts white
+    //Ed: paint all verts white
     private void clearPaint()
     {
         Color white = Color.white;
 
-        //colour the whole mesh white first
+        //Ed: colour the whole mesh white first
         for (int i = 0; i < sudoMesh.vertexCount; i++)
             sudoMesh.updateVertexColor(i, white);
     }
 
-    //paint the selected and neibghouring vertices
+    //Ed: paint the selected and neibghouring vertices
     private void paintVertices()
     {
         bool paintNeighbours = false;
 
         if (paintNeighbours)
-            //then colour the neibghours
+            //Ed: then colour the neibghours
             foreach (int mainVert in selectedVerts)
                 foreach (HalfEdge neighbour in findNeighbouringHalfEdges(mainVert))
                     sudoMesh.updateVertexColor(neighbour.vertexEnd, Color.red);
@@ -188,40 +197,40 @@ public class InitilizationScript : MonoBehaviour
             sudoMesh.updateVertexColor(mainVert, Color.red)
 ;    }
 
-    //find all the neighbouring vertices, and return the corresponding half edge
-    //means we can do face calculations as well
+    //Ed: find all the neighbouring vertices, and return the corresponding half edge
+    //Ed: means we can do face calculations as well
     private List<HalfEdge> findNeighbouringHalfEdges(int vertex)
     {
         List<HalfEdge> neighbours = new List<HalfEdge>();
-        List<int> searchedFaces = new List<int>();            //for ensuring we don't add more than one HE per face
-        List<int> searchedVertices = new List<int>();           //for ensuring we don't add a HE with the same vert ID
-        HalfEdge currentHE = heMesh.vertToHE[vertex];           //set current HE to the next of verts HE, as we will visit this vert again
+        List<int> searchedFaces = new List<int>();            //Ed: for ensuring we don't add more than one HE per face
+        List<int> searchedVertices = new List<int>();           //Ed: for ensuring we don't add a HE with the same vert ID
+        HalfEdge currentHE = heMesh.vertToHE[vertex];           //Ed: set current HE to the next of verts HE, as we will visit this vert again
         List<HalfEdge> traversedHEs = new List<HalfEdge>();
         
-        //loop thorugh half edge faces until we have arrived back at our vertex
-        //and then get twin and repeat
-        //if we don't have a twin, then search in the other direction
-        //end search we we have returned to start or ended sarch in both directions
+        //Ed: loop thorugh half edge faces until we have arrived back at our vertex
+        //Ed: and then get twin and repeat
+        //Ed: if we don't have a twin, then search in the other direction
+        //Ed: end search we we have returned to start or ended sarch in both directions
 
         bool oneSideSearched = false;
         bool searchFinished = false;
 
         do
         {
-            //if we are back to the begining
+            //Ed: if we are back to the begining
             if (currentHE.vertexEnd == vertex)
-                //enter the new face
+                //Ed: enter the new face
                 currentHE = currentHE.oppositeHalfEdge;
 
-            //if no twin, then end this side of the search
+            //Ed: if no twin, then end this side of the search
             if (currentHE == null)
-                //if this is the final search
+                //Ed: if this is the final search
                 if (oneSideSearched)
                 {
                     searchFinished = true;
                     break;
                 }
-                //else start searching in the other direction
+                //Ed: else start searching in the other direction
                 else
                 {
                     currentHE = heMesh.vertToHE[vertex].oppositeHalfEdge;
@@ -233,11 +242,11 @@ public class InitilizationScript : MonoBehaviour
                     }
                 }
             
-            //add the new HE to the list if
-            //we haven't already added one with the same Vert
-            //and if it's not the one we are lookiing for
-            //but only if we haven't use a HE from this face before
-            //and if it's a unnique vertex
+            //Ed: add the new HE to the list if
+            //Ed: we haven't already added one with the same Vert
+            //Ed: and if it's not the one we are lookiing for
+            //Ed: but only if we haven't use a HE from this face before
+            //Ed: and if it's a unnique vertex
             if ((currentHE.vertexEnd != vertex)
                 && (!searchedFaces.Exists(x => x == currentHE.face))
                 && (!searchedVertices.Exists(x => x == currentHE.vertexEnd)))
@@ -247,11 +256,11 @@ public class InitilizationScript : MonoBehaviour
                 searchedVertices.Add(currentHE.vertexEnd);
             }
 
-            //if this HE has already been traversed, then end the search
+            //Ed: if this HE has already been traversed, then end the search
             if (traversedHEs.Exists(x => x == currentHE))
                 searchFinished = true;
             else
-                //add the currentHE to the traversed list
+                //Ed: add the currentHE to the traversed list
                 traversedHEs.Add(currentHE);
 
             currentHE = currentHE.nextHalfEdge;
